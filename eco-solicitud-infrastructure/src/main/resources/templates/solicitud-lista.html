@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{layout :: head('EcoSolicitud - Lista de Solicitudes')}"></head>
+<body>
+  <header th:replace="~{layout :: header}"></header>
+  
+  <main class="main">
+    <div style="text-align: center; margin: 48px 0;">
+      <h1 style="font-size: 36px; margin: 0 0 16px 0;">Lista de Solicitudes</h1>
+      <p style="font-size: 18px; color: var(--muted); margin: 0 0 32px 0;">
+        Visualiza todas las solicitudes de recolección registradas en el sistema.
+      </p>
+    </div>
+
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <label style="margin-right: 8px; font-weight: 600;">Ordenar por:</label>
+          <select id="ordenarSelect" style="padding: 8px 12px; border: 1px solid var(--border); background: var(--panel-dark); border-radius: 8px; color: var(--text);" onchange="window.location.href = '/solicitud/lista?ordenar=' + this.value">
+            <option value="llegada" th:selected="${ordenarActual == 'llegada'}">Orden de llegada</option>
+            <option value="distancia" th:selected="${ordenarActual == 'distancia'}">Distancia (menor primero)</option>
+          </select>
+        </div>
+        <a href="/solicitud/crear" class="btn primary">+ Nueva Solicitud</a>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 style="margin: 0; font-size: 18px;">Solicitudes Registradas</h2>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div th:if="${solicitudes.isEmpty()}" style="padding: 40px; text-align: center; color: var(--muted);">
+            <p>No hay solicitudes registradas aún.</p>
+            <a href="/solicitud/crear" class="btn primary" style="margin-top: 16px;">Crear primera solicitud</a>
+          </div>
+          
+          <table th:if="${!solicitudes.isEmpty()}" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: var(--panel-dark); border-bottom: 1px solid var(--border);">
+                <th style="padding: 12px; text-align: left; font-weight: 600;">ID</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600;">Descripción</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600;">Ubicación</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600;">Entidad Recolectora</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600;">Distancia</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600;">Estado</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="solicitud : ${solicitudes}" style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 12px;" th:text="${solicitud.id}">1</td>
+                <td style="padding: 12px;" th:text="${solicitud.descripcion}">Descripción de la solicitud</td>
+                <td style="padding: 12px;">
+                  <span th:text="${#numbers.formatDecimal(solicitud.lat, 1, 4)} + ', ' + ${#numbers.formatDecimal(solicitud.lng, 1, 4)}">-30.9064, -55.5508</span>
+                </td>
+                <td style="padding: 12px;" th:text="${solicitud.entidadRecolectora ?: 'No especificada'}">Entidad 1</td>
+                <td style="padding: 12px;">
+                  <span th:if="${solicitud.distancia != null}" th:text="${#numbers.formatDecimal(solicitud.distancia, 1, 2)} + ' km'" style="color: #16a34a; font-weight: 600;">-- km</span>
+                  <span th:if="${solicitud.distancia == null}" style="color: var(--muted);">--</span>
+                </td>
+                <td style="padding: 12px;">
+                  <span th:class="${'badge ' + (solicitud.estado == T(com.tcc.model.EstadoSolicitud).RECIBIDA ? 'badge-info' : 
+                                                solicitud.estado == T(com.tcc.model.EstadoSolicitud).ACEPTADA ? 'badge-success' : 
+                                                solicitud.estado == T(com.tcc.model.EstadoSolicitud).RECHAZADA ? 'badge-error' : 
+                                                'badge-completed')}"
+                        th:text="${solicitud.estado}">RECIBIDA</span>
+                </td>
+                <td style="padding: 12px;">
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <a th:href="@{/solicitud/{id}/ruta(id=${solicitud.id})}" class="btn" style="font-size:12px;padding:6px 12px;">Ver Ruta</a>
+                    <form th:action="@{/solicitud/{id}/cambiar-estado(id=${solicitud.id})}" method="post" style="display:inline;">
+                      <input type="hidden" name="nuevoEstado" value="ACEPTADA"/>
+                      <button type="submit" class="btn" style="font-size:12px;padding:6px 12px;background:#10b981;color:white;border:none;cursor:pointer;">Aceptar</button>
+                    </form>
+                    <form th:action="@{/solicitud/{id}/cambiar-estado(id=${solicitud.id})}" method="post" style="display:inline;">
+                      <input type="hidden" name="nuevoEstado" value="RECHAZADA"/>
+                      <button type="submit" class="btn" style="font-size:12px;padding:6px 12px;background:#ef4444;color:white;border:none;cursor:pointer;">Rechazar</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer th:replace="~{layout :: footer}"></footer>
+  
+  <style>
+    .badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-info {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+    .badge-success {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--accent);
+    }
+    .badge-error {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--error);
+    }
+    .badge-completed {
+      background: rgba(168, 85, 247, 0.2);
+      color: #a78bfa;
+    }
+  </style>
+</body>
+</html>

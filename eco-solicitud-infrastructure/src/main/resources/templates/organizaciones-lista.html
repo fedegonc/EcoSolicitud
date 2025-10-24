@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{layout :: head('Organizaciones de Acopio')}"></head>
+<body>
+  <header th:replace="~{layout :: header}"></header>
+  <main class="main">
+    <div class="card">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <h2 style="margin:0;">Organizaciones de Acopio</h2>
+        <a href="/organizaciones/crear" class="btn primary">+ Registrar</a>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div th:if="${organizaciones.isEmpty()}" style="padding:24px;color:var(--muted);">No hay organizaciones registradas.</div>
+        <table th:if="${!organizaciones.isEmpty()}" style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:var(--panel-dark);border-bottom:1px solid var(--border);">
+              <th style="padding:12px;text-align:left;">ID</th>
+              <th style="padding:12px;text-align:left;">Nombre</th>
+              <th style="padding:12px;text-align:left;">Dirección</th>
+              <th style="padding:12px;text-align:left;">Teléfono</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="o : ${organizaciones}" style="border-bottom:1px solid var(--border);">
+              <td style="padding:12px;" th:text="${o.id}">1</td>
+              <td style="padding:12px;" th:text="${o.nombre}">Org</td>
+              <td style="padding:12px;" th:text="${o.direccion}">Calle 123</td>
+              <td style="padding:12px;" th:text="${o.telefono}">099 000 000</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+  <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

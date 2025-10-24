@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{layout :: head('KPIs - Selección')}"></head>
+<body>
+  <header th:replace="~{layout :: header}"></header>
+  
+  <main class="main">
+    <div class="card">
+      <div class="head">
+        <div>
+          <h1 th:text="#{kpis.select.title}">Panel de KPIs</h1>
+          <div class="muted" th:text="#{kpis.select.subtitle}">Seleccioná hasta 5 métricas para visualizar</div>
+        </div>
+      </div>
+      <div class="content">
+        <form th:action="@{/kpis}" method="post">
+          <div class="grid">
+            <div class="option" th:each="opt : ${options}">
+              <input type="checkbox" th:id="${opt.key}" th:name="metrics" th:value="${opt.key}" />
+              <label th:for="${opt.key}" th:text="${opt.label}"></label>
+            </div>
+          </div>
+          <div class="tip muted" th:text="#{kpis.select.tip}">Consejo: Empezá por volumen, rendimiento y calidad (ej. total, % completadas, tiempo estimado).</div>
+          <div class="actions">
+            <a class="btn" href="/" th:text="#{kpis.select.back}">Volver</a>
+            <button class="btn primary" type="submit" th:text="#{kpis.select.submit}">Ver dashboard</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+  
+  <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

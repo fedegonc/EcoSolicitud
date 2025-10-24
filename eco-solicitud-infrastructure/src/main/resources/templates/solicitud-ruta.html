@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{layout :: head('Ruta de Solicitud')}"></head>
+<body>
+  <header th:replace="~{layout :: header}"></header>
+  
+  <main class="main">
+    <div class="card">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <h2 style="margin:0;">Ruta de Solicitud #<span th:text="${solicitud.id}">1</span></h2>
+        <a href="/solicitud/lista" class="btn">Volver</a>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+          <div>
+            <strong>Descripción:</strong>
+            <p style="margin:8px 0 0 0;color:var(--muted);" th:text="${solicitud.descripcion}">Descripción</p>
+          </div>
+          <div>
+            <strong>Organización:</strong>
+            <p style="margin:8px 0 0 0;color:var(--muted);" th:text="${solicitud.entidadRecolectora}">Org</p>
+          </div>
+        </div>
+
+        <div id="map" style="height:500px;width:100%;border-radius:10px;border:1px solid var(--border);margin-bottom:20px;"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div style="padding:12px;background:var(--panel-dark);border-radius:8px;border-left:4px solid #3b82f6;" th:data-lat="${solicitud.lat}" th:data-lng="${solicitud.lng}">
+            <strong style="color:#3b82f6;">📍 Solicitud</strong>
+            <p style="margin:8px 0 0 0;font-size:14px;">
+              Lat: <span th:text="${#numbers.formatDecimal(solicitud.lat, 1, 4)}">-30.9064</span><br/>
+              Lng: <span th:text="${#numbers.formatDecimal(solicitud.lng, 1, 4)}">-55.5508</span>
+            </p>
+          </div>
+          <div style="padding:12px;background:var(--panel-dark);border-radius:8px;border-left:4px solid #10b981;">
+            <strong style="color:#10b981;">🏢 Organización</strong>
+            <p style="margin:8px 0 0 0;font-size:14px;" id="orgInfo">Selecciona una organización</p>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding:12px;background:var(--panel-dark);border-radius:8px;">
+          <strong>Distancia:</strong>
+          <p style="margin:8px 0 0 0;font-size:18px;color:#16a34a;" id="distancia">-- km</p>
+        </div>
+
+        <div style="margin-top:20px;">
+          <label for="orgSelector" style="display:block;margin-bottom:8px;font-weight:600;">Organización de Acopio:</label>
+          <select id="orgSelector" style="width:100%;padding:10px;border:1px solid var(--border);background:var(--panel-dark);border-radius:8px;color:var(--text);">
+            <option value="">-- Seleccionar --</option>
+            <option th:each="org : ${organizaciones}" th:value="${org.id}" th:data-lat="${org.lat}" th:data-lng="${org.lng}" th:text="${org.nombre}" th:selected="${org.id == solicitud.organizacionId}"></option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer th:replace="~{layout :: footer}"></footer>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Extraer lat/lng de la solicitud desde los atributos data
+    const solicitudBlock = document.querySelector('[data-lat][data-lng]');
+    const solicitud = {
+      lat: parseFloat(solicitudBlock?.dataset.lat || -30.9064),
+      lng: parseFloat(solicitudBlock?.dataset.lng || -55.5508)
+    };
+
+    const map = L.map('map').setView([solicitud.lat, solicitud.lng], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let solicitudMarker = L.marker([solicitud.lat, solicitud.lng], {
+      icon: L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      })
+    }).addTo(map).bindPopup('📍 Solicitud');
+
+    let orgMarker = null;
+    let polyline = null;
+
+    function haversine(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    function updateRoute() {
+      const selector = document.getElementById('orgSelector');
+      const selectedOption = selector.options[selector.selectedIndex];
+      const orgLat = parseFloat(selectedOption.dataset.lat);
+      const orgLng = parseFloat(selectedOption.dataset.lng);
+      const orgNombre = selectedOption.text;
+
+      if (!orgLat || !orgLng) {
+        if (orgMarker) map.removeLayer(orgMarker);
+        if (polyline) map.removeLayer(polyline);
+        document.getElementById('orgInfo').textContent = 'Selecciona una organización';
+        document.getElementById('distancia').textContent = '-- km';
+        return;
+      }
+
+      // Actualizar marcador de organización
+      if (orgMarker) map.removeLayer(orgMarker);
+      orgMarker = L.marker([orgLat, orgLng], {
+        icon: L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        })
+      }).addTo(map).bindPopup('🏢 ' + orgNombre);
+
+      // Obtener ruta real desde OpenRouteService
+      const url = `https://router.project-osrm.org/route/v1/driving/${solicitud.lng},${solicitud.lat};${orgLng},${orgLat}?overview=full&geometries=geojson`;
+      
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          if (data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
+            const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+            const distKm = route.distance / 1000;
+            
+            // Dibujar ruta real
+            if (polyline) map.removeLayer(polyline);
+            polyline = L.polyline(coords, { color: '#16a34a', weight: 4, opacity: 0.8 }).addTo(map);
+            
+            // Actualizar distancia
+            document.getElementById('distancia').textContent = distKm.toFixed(2) + ' km';
+            document.getElementById('orgInfo').innerHTML = 
+              'Lat: ' + orgLat.toFixed(4) + '<br/>Lng: ' + orgLng.toFixed(4);
+            
+            // Ajustar vista
+            map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+          }
+        })
+        .catch(err => {
+          console.error('Error obteniendo ruta:', err);
+          // Fallback a línea recta
+          if (polyline) map.removeLayer(polyline);
+          polyline = L.polyline([
+            [solicitud.lat, solicitud.lng],
+            [orgLat, orgLng]
+          ], { color: '#16a34a', weight: 3, opacity: 0.7 }).addTo(map);
+          
+          const dist = haversine(solicitud.lat, solicitud.lng, orgLat, orgLng);
+          document.getElementById('distancia').textContent = dist.toFixed(2) + ' km (aprox)';
+          document.getElementById('orgInfo').innerHTML = 
+            'Lat: ' + orgLat.toFixed(4) + '<br/>Lng: ' + orgLng.toFixed(4);
+          
+          map.fitBounds([
+            [solicitud.lat, solicitud.lng],
+            [orgLat, orgLng]
+          ], { padding: [50, 50] });
+        });
+    }
+
+    document.getElementById('orgSelector').addEventListener('change', updateRoute);
+    
+    // Cargar ruta automáticamente si hay organización preseleccionada
+    if (document.getElementById('orgSelector').value) {
+      updateRoute();
+    }
+  </script>
+</body>
+</html>

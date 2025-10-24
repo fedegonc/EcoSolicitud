@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{layout :: head('EcoSolicitud - Crear Solicitud')}"></head>
+<body>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <header th:replace="~{layout :: header}"></header>
+  
+  <main class="main">
+    <div style="text-align: center; margin: 48px 0;">
+      <h1 style="font-size: 36px; margin: 0 0 16px 0;" th:text="#{solicitud.form.title}">Crear Nueva Solicitud</h1>
+      <p style="font-size: 18px; color: var(--muted); margin: 0 0 32px 0;" th:text="#{solicitud.form.subtitle}">
+        Registra una nueva solicitud de recolección con los detalles necesarios.
+      </p>
+    </div>
+
+    <div style="max-width: 600px; margin: 0 auto;">
+      <div class="card">
+        <div class="card-header">
+          <h2 style="margin: 0; font-size: 18px;" th:text="#{solicitud.form.header}">Formulario de Solicitud</h2>
+        </div>
+        <div class="card-body">
+          <form th:object="${solicitud}" th:action="@{/solicitud/crear}" method="post">
+            <div style="margin-bottom: 20px;">
+              <label for="descripcion" style="display: block; margin-bottom: 8px; font-weight: 600;" th:text="#{solicitud.form.descripcion.label}">Descripción</label>
+              <input type="text" id="descripcion" th:field="*{descripcion}" 
+                     style="width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--panel-dark); color: var(--text); border-radius: 8px;"
+                     th:placeholder="#{solicitud.form.descripcion.placeholder}" />
+              <div style="color: var(--error); font-size: 14px; margin-top: 8px;" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <label for="organizacionId" style="display: block; margin-bottom: 8px; font-weight: 600;">Organización de Acopio</label>
+              <select id="organizacionId" th:field="*{organizacionId}" 
+                      style="width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--panel-dark); color: var(--text); border-radius: 8px;">
+                <option value="">-- Seleccionar organización --</option>
+                <option th:each="org : ${organizaciones}" th:value="${org.id}" th:text="${org.nombre}"></option>
+              </select>
+              <div style="color: var(--error); font-size: 14px; margin-top: 8px;" th:if="${#fields.hasErrors('organizacionId')}" th:errors="*{organizacionId}"></div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; margin-bottom: 8px; font-weight: 600;" th:text="#{solicitud.form.ubicacion.label}">Ubicación</label>
+              <div id="map" style="height: 300px; width: 100%; border-radius: 8px; margin-bottom: 10px;"></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                  <label for="lat" style="display: block; margin-bottom: 8px; font-weight: 600;" th:text="#{solicitud.form.lat.label}">Latitud</label>
+                  <input type="number" id="lat" th:field="*{lat}" step="0.0001"
+                         style="width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--panel-dark); color: var(--text); border-radius: 8px;"
+                         th:placeholder="#{solicitud.form.lat.placeholder}" />
+                  <div style="color: var(--error); font-size: 14px; margin-top: 8px;" th:if="${#fields.hasErrors('lat')}" th:errors="*{lat}"></div>
+                </div>
+                <div>
+                  <label for="lng" style="display: block; margin-bottom: 8px; font-weight: 600;" th:text="#{solicitud.form.lng.label}">Longitud</label>
+                  <input type="number" id="lng" th:field="*{lng}" step="0.0001"
+                         style="width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--panel-dark); color: var(--text); border-radius: 8px;"
+                         th:placeholder="#{solicitud.form.lng.placeholder}" />
+                  <div style="color: var(--error); font-size: 14px; margin-top: 8px;" th:if="${#fields.hasErrors('lng')}" th:errors="*{lng}"></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 16px;">
+              <a href="/" class="btn" th:text="#{solicitud.form.cancel}">Cancelar</a>
+              <button type="submit" class="btn primary" th:text="#{solicitud.form.submit}">Crear Solicitud</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer th:replace="~{layout :: footer}"></footer>
+  
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    // Centro el mapa en Rivera por defecto
+    var map = L.map('map').setView([-30.9064, -55.5508], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var marker = L.marker([-30.9064, -55.5508]).addTo(map);
+
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        document.getElementById('lat').value = e.latlng.lat.toFixed(4);
+        document.getElementById('lng').value = e.latlng.lng.toFixed(4);
+    });
+
+    function updateMarker() {
+        var lat = parseFloat(document.getElementById('lat').value) || -30.9064;
+        var lng = parseFloat(document.getElementById('lng').value) || -55.5508;
+        marker.setLatLng([lat, lng]);
+        map.setView([lat, lng], 10);
+    }
+
+    document.getElementById('lat').addEventListener('change', updateMarker);
+    document.getElementById('lng').addEventListener('change', updateMarker);
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            marker.setLatLng([lat, lng]);
+            map.setView([lat, lng], 10);
+            document.getElementById('lat').value = lat.toFixed(4);
+            document.getElementById('lng').value = lng.toFixed(4);
+        });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{layout :: head('KPIs - Dashboard')}"></head>
+<body>
+  <header th:replace="~{layout :: header}"></header>
+  
+  <main class="main">
+    <style>
+      .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+      .kpi-card{background:var(--panel-dark);border:1px solid var(--border);border-radius:12px;padding:16px}
+      .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+      .value{font-size:24px;font-weight:700}
+      .bar{height:6px;background:#0a0f1a;border:1px solid var(--border);border-radius:999px;overflow:hidden;margin-top:10px}
+      .bar>div{height:100%;background:linear-gradient(90deg,#22c55e,#16a34a)}
+      @media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media (max-width:600px){.grid{grid-template-columns:1fr}}
+    </style>
+    <div class="header">
+      <div>
+        <h1 th:text="#{kpis.dashboard.title}">Dashboard de KPIs</h1>
+        <div class="muted" th:text="#{kpis.dashboard.subtitle(${selectedCount}, ${max})}">5 métricas seleccionadas (máx. 5)</div>
+      </div>
+      <div class="actions">
+        <a class="btn" href="/" th:text="#{kpis.dashboard.home}">Inicio</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="kpi-card" th:each="entry : ${results}">
+        <div class="label" th:text="${entry.key}">Etiqueta</div>
+        <div class="value" th:text="${entry.value}">0</div>
+        <!-- Indicador simple para porcentajes -->
+        <div class="bar" th:if="${#strings.contains(entry.key, '%')}">
+          <div th:style="${'width:' + entry.value.replace('%','') + '%'}"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

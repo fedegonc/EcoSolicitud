@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{layout :: head('Notificaciones')}"></head>
+<body>
+  <header th:replace="~{layout :: header}"></header>
+  
+  <main class="main">
+    <div style="text-align: center; margin: 48px 0;">
+      <h1 style="font-size: 36px; margin: 0 0 16px 0;">Notificaciones</h1>
+      <p style="font-size: 18px; color: var(--muted); margin: 0 0 32px 0;">
+        <span th:text="${noLeidas}">0</span> notificaciones sin leer
+      </p>
+    </div>
+
+    <div style="max-width: 800px; margin: 0 auto;">
+      <div th:if="${notificaciones.isEmpty()}" style="text-align: center; padding: 40px; color: var(--muted);">
+        <p>No hay notificaciones.</p>
+      </div>
+      
+      <div th:each="notif : ${notificaciones}" style="margin-bottom: 16px; padding: 16px; background: var(--panel-dark); border-radius: 8px; border-left: 4px solid #3b82f6;" th:classappend="${notif.leida} ? 'opacity-50'">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div style="flex: 1;">
+            <h3 style="margin: 0 0 8px 0; font-size: 16px;" th:text="${notif.titulo}">Título</h3>
+            <p style="margin: 0 0 8px 0; color: var(--muted);" th:text="${notif.mensaje}">Mensaje</p>
+            <small style="color: var(--muted);" th:text="${#temporals.format(notif.fechaCreacion, 'dd/MM/yyyy HH:mm')}">Fecha</small>
+          </div>
+          <div style="margin-left: 16px;">
+            <form th:action="@{/notificaciones/{id}/marcar-leida(id=${notif.id})}" method="post" style="display: inline;">
+              <button type="submit" class="btn" style="font-size: 12px; padding: 6px 12px;" th:text="${notif.leida} ? 'Marcar sin leer' : 'Marcar como leída'">Marcar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>
