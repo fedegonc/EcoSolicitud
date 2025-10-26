@@ -4,23 +4,23 @@
 <body>
   <header th:replace="~{layout :: header}"></header>
   
-  <main class="main">
-    <div style="text-align: center; margin: 48px 0;">
-      <h1 style="font-size: 36px; margin: 0 0 16px 0;" th:text="#{home.hero.title}">Sistema de Optimización de Rutas</h1>
-      <p style="font-size: 18px; color: var(--muted); margin: 0 0 32px 0;" th:text="#{home.hero.subtitle}">
+  <main class="main home">
+    <div class="hero">
+      <h1 class="hero-title" th:text="#{home.hero.title}">Sistema de Optimización de Rutas</h1>
+      <p class="hero-subtitle" th:text="#{home.hero.subtitle}">
         Gestión inteligente de solicitudes de recolección
       </p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 32px;">
-      
+    <div class="cards-grid">
+
       <!-- Card KPIs -->
-      <div class="card">
+      <div class="card compact">
         <div class="card-header">
-          <h2 style="margin: 0; font-size: 18px;" th:text="|📊 #{home.card.kpis.title}|">📊 Panel de KPIs</h2>
+          <h2 th:text="|📊 #{home.card.kpis.title}|">📊 Panel de KPIs</h2>
         </div>
         <div class="card-body">
-          <p style="color: var(--muted); margin: 0 0 16px 0;" th:text="#{home.card.kpis.description}">
+          <p class="card-text" th:text="#{home.card.kpis.description}">
             Visualizá métricas clave del sistema: volumen, rendimiento y calidad.
           </p>
           <a href="/kpis" class="btn primary" th:text="#{home.card.kpis.button}">Ver KPIs</a>
@@ -28,15 +28,15 @@
       </div>
 
       <!-- Card Crear Solicitud -->
-      <div class="card">
+      <div class="card compact">
         <div class="card-header">
-          <h2 style="margin: 0; font-size: 18px;" th:text="|📋 #{home.card.solicitud.title}|">📋 Crear Solicitud</h2>
+          <h2 th:text="|📋 #{home.card.solicitud.title}|">📋 Crear Solicitud</h2>
         </div>
         <div class="card-body">
-          <p style="color: var(--muted); margin: 0 0 16px 0;" th:text="#{home.card.solicitud.description}">
+          <p class="card-text" th:text="#{home.card.solicitud.description}">
             Registra una nueva solicitud de recolección.
           </p>
-          <div style="display: flex; gap: 10px;">
+          <div class="flex-gap">
             <a href="/solicitud/crear" class="btn primary" th:text="#{home.card.solicitud.button}">Crear Solicitud</a>
             <a href="/solicitud/lista" class="btn">Ver Lista</a>
           </div>
@@ -44,23 +44,23 @@
       </div>
 
       <!-- Card Registrar Organización -->
-      <div class="card">
+      <div class="card compact">
         <div class="card-header">
-          <h2 style="margin: 0; font-size: 18px;">🏢 Registrar Organización de Acopio</h2>
+          <h2>🏢 Registrar Organización de Acopio</h2>
         </div>
         <div class="card-body">
-          <p style="color: var(--muted); margin: 0 0 16px 0;">Cargá rápidamente una organización de ejemplo.</p>
+          <p class="card-text">Cargá rápidamente una organización de ejemplo.</p>
           <a href="/organizaciones/crear" class="btn primary">Registrar Organización</a>
         </div>
       </div>
 
       <!-- Card API -->
-      <div class="card">
+      <div class="card compact">
         <div class="card-header">
-          <h2 style="margin: 0; font-size: 18px;" th:text="|🔌 #{home.card.api.title}|">🔌 API REST</h2>
+          <h2 th:text="|🔌 #{home.card.api.title}|">🔌 API REST</h2>
         </div>
         <div class="card-body">
-          <p style="color: var(--muted); margin: 0 0 16px 0;" th:text="#{home.card.api.description}">
+          <p class="card-text" th:text="#{home.card.api.description}">
             Endpoints para solicitudes, rutas optimizadas, estadísticas y métricas.
           </p>
           <a href="/api/rutas/solicitudes" class="btn" th:text="#{home.card.api.button}">Explorar API</a>
@@ -68,12 +68,12 @@
       </div>
 
       <!-- Card H2 Console -->
-      <div class="card">
+      <div class="card compact">
         <div class="card-header">
-          <h2 style="margin: 0; font-size: 18px;" th:text="|💾 #{home.card.db.title}|">💾 Base de Datos</h2>
+          <h2 th:text="|💾 #{home.card.db.title}|">💾 Base de Datos</h2>
         </div>
         <div class="card-body">
-          <p style="color: var(--muted); margin: 0 0 16px 0;" th:text="#{home.card.db.description}">
+          <p class="card-text" th:text="#{home.card.db.description}">
             Consola H2 para inspeccionar y consultar datos en tiempo real.
           </p>
           <a href="/h2-console" target="_blank" class="btn" th:text="#{home.card.db.button}">Abrir consola</a>
@@ -83,30 +83,30 @@
     </div>
 
     <!-- Features -->
-    <div style="margin-top: 48px;">
-      <h3 style="font-size: 20px; margin-bottom: 20px;" th:text="|✨ #{home.features.title}|">✨ Características</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
-        <div style="padding: 16px; background: var(--panel-dark); border: 1px solid var(--border); border-radius: 10px;">
+    <div class="features-section">
+      <h3 class="features-title" th:text="|✨ #{home.features.title}|">✨ Características</h3>
+      <div class="features-grid">
+        <div class="feature-card">
           <strong th:text="#{home.feature.modular.title}">Arquitectura modular</strong>
-          <p style="color: var(--muted); font-size: 14px; margin: 8px 0 0 0;" th:text="#{home.feature.modular.desc}">
+          <p th:text="#{home.feature.modular.desc}">
             Separación en capas: dominio, aplicación e infraestructura.
           </p>
         </div>
-        <div style="padding: 16px; background: var(--panel-dark); border: 1px solid var(--border); border-radius: 10px;">
+        <div class="feature-card">
           <strong th:text="#{home.feature.routes.title}">Optimización de rutas</strong>
-          <p style="color: var(--muted); font-size: 14px; margin: 8px 0 0 0;" th:text="#{home.feature.routes.desc}">
+          <p th:text="#{home.feature.routes.desc}">
             Algoritmos para minimizar distancia y tiempo de recolección.
           </p>
         </div>
-        <div style="padding: 16px; background: var(--panel-dark); border: 1px solid var(--border); border-radius: 10px;">
+        <div class="feature-card">
           <strong th:text="#{home.feature.metrics.title}">Métricas en tiempo real</strong>
-          <p style="color: var(--muted); font-size: 14px; margin: 8px 0 0 0;" th:text="#{home.feature.metrics.desc}">
+          <p th:text="#{home.feature.metrics.desc}">
             Dashboard con KPIs clave para control de rendimiento.
           </p>
         </div>
-        <div style="padding: 16px; background: var(--panel-dark); border: 1px solid var(--border); border-radius: 10px;">
+        <div class="feature-card">
           <strong th:text="#{home.feature.api.title}">API REST completa</strong>
-          <p style="color: var(--muted); font-size: 14px; margin: 8px 0 0 0;" th:text="#{home.feature.api.desc}">
+          <p th:text="#{home.feature.api.desc}">
             Endpoints documentados para integración con otros sistemas.
           </p>
         </div>

@@ -5,7 +5,6 @@ import com.tcc.model.Solicitud;
 import com.tcc.model.Organizacion;
 import com.tcc.repository.SolicitudRepository;
 import com.tcc.repository.OrganizacionRepository;
-import com.tcc.service.NotificacionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,9 +28,6 @@ public class SolicitudController {
     
     @Autowired
     private OrganizacionRepository organizacionRepository;
-    
-    @Autowired
-    private NotificacionService notificacionService;
 
     @GetMapping("/crear")
     public String mostrarFormulario(Model model) {
@@ -115,14 +111,8 @@ public class SolicitudController {
         if (solicitud != null) {
             try {
                 EstadoSolicitud estado = EstadoSolicitud.valueOf(nuevoEstado);
-                String estadoAnterior = solicitud.getEstado().toString();
                 solicitud.setEstado(estado);
                 solicitudRepository.save(solicitud);
-                
-                // Crear notificación
-                String titulo = "Solicitud " + estado;
-                String mensaje = "Tu solicitud #" + id + " cambió de " + estadoAnterior + " a " + estado;
-                notificacionService.crear(titulo, mensaje, id);
             } catch (IllegalArgumentException e) {
                 // Estado inválido
             }

@@ -13,6 +13,9 @@ public class Usuario {
     private String nombre;
     private String telefono;
     private String email;
+    private String password;
+    private String authProvider; // "google" o "local"
+    private String googleId;
 
     @OneToMany(mappedBy = "usuario")
     private List<Solicitud> solicitudes = new ArrayList<>();
@@ -30,6 +33,14 @@ public class Usuario {
         this.email = email;
     }
 
+    public Usuario(String nombre, String email, String password, String telefono) {
+        this.nombre = nombre;
+        this.email = email;
+        this.password = password;
+        this.telefono = telefono;
+        this.authProvider = "local";
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -42,6 +53,15 @@ public class Usuario {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getAuthProvider() { return authProvider; }
+    public void setAuthProvider(String authProvider) { this.authProvider = authProvider; }
+
+    public String getGoogleId() { return googleId; }
+    public void setGoogleId(String googleId) { this.googleId = googleId; }
+
     public List<Solicitud> getSolicitudes() { return solicitudes; }
     public void setSolicitudes(List<Solicitud> solicitudes) { this.solicitudes = solicitudes; }
 
@@ -52,6 +72,7 @@ public class Usuario {
                 ", nombre='" + nombre + '\'' +
                 ", telefono='" + telefono + '\'' +
                 ", email='" + email + '\'' +
+                ", authProvider='" + authProvider + '\'' +
                 '}';
     }
 }
